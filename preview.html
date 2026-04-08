@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GridSnap — Preview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1a1a1a;
+      color: #e0e0e0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .toolbar h1 {
+      font-size: 20px;
+      color: #d3b961;
+      letter-spacing: 1px;
+    }
+
+    .toolbar .meta {
+      color: #bdc3c7;
+      font-size: 13px;
+      opacity: 0.5;
+    }
+
+    .toolbar .spacer { flex: 1; }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 3px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    button:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: #d3b961;
+      color: #1a1a1a;
+    }
+
+    .btn-primary:hover { background: #dcc574; }
+
+    .btn-secondary {
+      background: #2a2a2a;
+      color: #bdc3c7;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-secondary:hover { background: #333333; }
+
+    /* ── Full canvas section ───────────────────────────────── */
+    .section-title {
+      font-size: 14px;
+      color: #bdc3c7;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    .canvas-preview {
+      background: #111111;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      padding: 16px;
+      margin-bottom: 32px;
+      overflow: auto;
+      max-height: 70vh;
+    }
+
+    .canvas-preview img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border-radius: 2px;
+    }
+
+    /* ── Individual snaps grid ─────────────────────────────── */
+    .snaps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .snap-card {
+      background: #111111;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+
+    .snap-card:hover {
+      border-color: #d3b961;
+    }
+
+    .snap-card .snap-img {
+      width: 100%;
+      display: block;
+      cursor: pointer;
+    }
+
+    .snap-card .snap-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+    }
+
+    .snap-card .snap-label {
+      font-size: 12px;
+      color: #bdc3c7;
+    }
+
+    .snap-card .snap-label span {
+      color: #bdc3c7;
+      opacity: 0.4;
+    }
+
+    .snap-card button {
+      padding: 4px 10px;
+      font-size: 11px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: #bdc3c7;
+      opacity: 0.4;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="content" class="loading">Loading preview...</div>
+  <script src="preview.js"></script>
+</body>
+</html>

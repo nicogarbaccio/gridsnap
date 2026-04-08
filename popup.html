@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      padding: 16px;
+    }
+
+    /* ── Tabs ─────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: #bdc3c7;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 0;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      width: auto;
+      opacity: 0.5;
+    }
+
+    .tab-btn:hover { opacity: 0.8; }
+    .tab-btn.active { color: #d3b961; border-bottom-color: #d3b961; opacity: 1; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Capture tab ──────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .header h1 {
+      font-size: 18px;
+      color: #d3b961;
+      letter-spacing: 1px;
+    }
+
+    .header .version {
+      font-size: 11px;
+      color: #bdc3c7;
+      opacity: 0.4;
+      margin-left: auto;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: #bdc3c7;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.7;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 8px 10px;
+      background: #222222;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      color: #ffffff;
+      font-size: 14px;
+      font-family: 'SF Mono', Consolas, monospace;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus {
+      border-color: #d3b961;
+    }
+
+    .field .hint {
+      font-size: 11px;
+      color: #bdc3c7;
+      opacity: 0.4;
+      margin-top: 3px;
+    }
+
+    .field select {
+      width: 100%;
+      padding: 8px 10px;
+      background: #222222;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      color: #ffffff;
+      font-size: 14px;
+      font-family: 'SF Mono', Consolas, monospace;
+      outline: none;
+      transition: border-color 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23bdc3c7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      cursor: pointer;
+    }
+
+    .field select:focus {
+      border-color: #d3b961;
+    }
+
+    /* ── Advanced toggle ──────────────────────────────────── */
+    .advanced-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 0;
+      margin-top: 4px;
+      font-size: 12px;
+      color: #bdc3c7;
+      opacity: 0.5;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.15s;
+    }
+
+    .advanced-toggle:hover { opacity: 0.8; }
+
+    .advanced-toggle .arrow {
+      display: inline-block;
+      font-size: 10px;
+      transition: transform 0.15s;
+    }
+
+    .advanced-toggle.open .arrow {
+      transform: rotate(90deg);
+    }
+
+    .advanced-panel {
+      display: none;
+      padding: 10px 0 4px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .advanced-panel.open {
+      display: block;
+    }
+
+    button.action-btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 3px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button.action-btn:active {
+      transform: scale(0.98);
+    }
+
+    #btn-start {
+      background: #d3b961;
+      color: #1a1a1a;
+    }
+
+    #btn-start:hover {
+      background: #dcc574;
+    }
+
+    #btn-start:disabled {
+      background: #2a2a2a;
+      color: #555;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #btn-stop {
+      display: none;
+      background: #c0392b;
+      color: #ffffff;
+      margin-top: 8px;
+    }
+
+    #btn-stop:hover {
+      background: #e74c3c;
+    }
+
+    .status {
+      text-align: center;
+      font-size: 12px;
+      color: #bdc3c7;
+      opacity: 0.4;
+      margin-top: 12px;
+    }
+
+    .status.active {
+      color: #1abc9c;
+      opacity: 1;
+    }
+
+    .hotkey-ref {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .hotkey-ref h3 {
+      font-size: 11px;
+      color: #bdc3c7;
+      opacity: 0.5;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .hotkey-ref .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 3px 0;
+      font-size: 12px;
+    }
+
+    .hotkey-ref kbd {
+      background: #222222;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-family: 'SF Mono', Consolas, monospace;
+      color: #d3b961;
+    }
+
+    /* ── Help tab ─────────────────────────────────────────── */
+    .help-content h2 {
+      font-size: 15px;
+      color: #d3b961;
+      margin: 16px 0 8px 0;
+    }
+
+    .help-content h2:first-child {
+      margin-top: 0;
+    }
+
+    .help-content p {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #bdc3c7;
+      margin-bottom: 8px;
+    }
+
+    .help-content ol,
+    .help-content ul {
+      font-size: 12px;
+      line-height: 1.7;
+      color: #bdc3c7;
+      padding-left: 18px;
+      margin-bottom: 10px;
+    }
+
+    .help-content li {
+      margin-bottom: 4px;
+    }
+
+    .help-content kbd {
+      background: #222222;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      padding: 1px 5px;
+      font-size: 11px;
+      font-family: 'SF Mono', Consolas, monospace;
+      color: #d3b961;
+    }
+
+    .help-content .tip {
+      background: rgba(211, 185, 97, 0.06);
+      border-left: 3px solid #d3b961;
+      padding: 8px 10px;
+      border-radius: 0 3px 3px 0;
+      font-size: 11px;
+      color: #bdc3c7;
+      margin: 10px 0;
+      line-height: 1.5;
+    }
+
+    .help-content .tip strong {
+      color: #d3b961;
+    }
+  </style>
+</head>
+<body>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="capture">Capture</button>
+    <button class="tab-btn" data-tab="help">How to Use</button>
+  </div>
+
+  <!-- ── Capture Tab ──────────────────────────────────────── -->
+  <div class="tab-panel active" id="tab-capture">
+    <div class="header">
+      <h1>GridSnap</h1>
+      <span class="version">v1.0.0</span>
+    </div>
+
+    <button class="action-btn" id="btn-start">Start Capture Session</button>
+    <button class="action-btn" id="btn-stop">Stop Session</button>
+
+    <div class="status" id="status">Ready</div>
+
+    <div class="advanced-toggle" id="advancedToggle">
+      <span class="arrow">&#9656;</span> Advanced Settings
+    </div>
+
+    <div class="advanced-panel" id="advancedPanel">
+      <div class="field">
+        <label>Max Column Height (px)</label>
+        <input type="number" id="maxHeight" min="200" max="20000" step="100" value="2000">
+        <div class="hint">Auto-wrap to a new column beyond this height</div>
+      </div>
+
+      <div class="field">
+        <label>Column Gap (px)</label>
+        <input type="number" id="columnGap" min="0" max="100" step="5" value="20">
+        <div class="hint">Horizontal space between columns in the output</div>
+      </div>
+
+      <div class="field">
+        <label>Export Format</label>
+        <select id="exportFormat">
+          <option value="png">PNG (lossless, larger)</option>
+          <option value="jpeg">JPEG (smaller files)</option>
+          <option value="webp">WebP (smallest)</option>
+        </select>
+        <div class="hint">Format for the final exported image</div>
+      </div>
+
+      <div class="field">
+        <label>Match Sensitivity</label>
+        <input type="number" id="matchSensitivity" min="0.70" max="0.99" step="0.01" value="0.92">
+        <div class="hint">Overlap detection strictness. Lower if stitching misaligns.</div>
+      </div>
+    </div>
+
+    <div class="hotkey-ref">
+      <h3>Hotkeys (during capture)</h3>
+      <div class="row"><span>Snap screenshot</span><kbd>S</kbd></div>
+      <div class="row"><span>Manual column break</span><kbd>B</kbd></div>
+      <div class="row"><span>Finish & export</span><kbd>Enter</kbd></div>
+      <div class="row"><span>Cancel session</span><kbd>Esc</kbd></div>
+    </div>
+  </div>
+
+  <!-- ── Help Tab ─────────────────────────────────────────── -->
+  <div class="tab-panel" id="tab-help">
+    <div class="help-content">
+      <h2>What is GridSnap?</h2>
+      <p>
+        GridSnap is a capture tool built for QA engineers who need to document
+        content rendered in Canvas elements, IFRAMEs, or other non-standard layouts.
+        It lets you snap multiple screenshots of a defined area, then automatically
+        stitches them into a single, scrollable grid image.
+      </p>
+
+      <h2>Quick Start</h2>
+      <ol>
+        <li>Navigate to the page you want to capture.</li>
+        <li>Click <strong>Start Capture Session</strong> above.</li>
+        <li>Draw a rectangle over the area you want to capture (the "Focus Zone").</li>
+        <li>Scroll the page to reveal new content, then press <kbd>S</kbd> to snap.</li>
+        <li>Repeat step 4 as many times as needed.</li>
+        <li>Press <kbd>Enter</kbd> to finish. A preview page will open with your assembled image.</li>
+      </ol>
+
+      <h2>Hotkeys</h2>
+      <ul>
+        <li><kbd>S</kbd> &mdash; Take a snap of the current Focus Zone.</li>
+        <li><kbd>B</kbd> &mdash; Force a manual column break. The next snap will start a new column in the output grid.</li>
+        <li><kbd>Enter</kbd> &mdash; Finish the session and open the preview.</li>
+        <li><kbd>Esc</kbd> &mdash; Cancel the session without saving.</li>
+      </ul>
+
+      <h2>Column Breaks</h2>
+      <p>
+        Snaps stack vertically in the output. When the combined height exceeds
+        the <strong>Max Column Height</strong> setting, GridSnap automatically wraps
+        into a new column to the right.
+      </p>
+      <p>
+        You can also press <kbd>B</kbd> at any time to force a new column. This
+        is useful for separating logical sections, for example capturing Paytable
+        screens in one column and Standard Rules in the next.
+      </p>
+
+      <h2>Overlap &amp; Stitching</h2>
+      <p>
+        When scrolling between snaps, you don't need to be precise. GridSnap uses
+        pixel-matching (cross-correlation) to detect overlapping regions between
+        consecutive snaps and removes the duplicated area automatically. Just make
+        sure there is some visible overlap between each scroll.
+      </p>
+
+      <div class="tip">
+        <strong>Tip:</strong> For best results, scroll so that roughly 10-30% of the
+        previous snap's content is still visible when you take the next snap.
+      </div>
+
+      <h2>Preview &amp; Export</h2>
+      <p>
+        After finishing, a preview tab opens showing the full assembled canvas
+        and each individual snap. You can download the entire grid image or
+        any individual snap separately.
+      </p>
+
+      <h2>Settings</h2>
+      <p>Click <strong>Advanced Settings</strong> on the Capture tab to access these options:</p>
+      <ul>
+        <li><strong>Max Column Height</strong> &mdash; The pixel height limit before
+        auto-wrapping to a new column. Default is 2000px. Increase for longer
+        single-column output; decrease for a wider, shorter grid.</li>
+        <li><strong>Column Gap</strong> &mdash; Horizontal spacing between columns
+        in the output image. Default is 20px.</li>
+        <li><strong>Export Format</strong> &mdash; PNG is lossless but large.
+        JPEG and WebP produce smaller files, useful for bulk uploads to
+        Jira or Confluence.</li>
+        <li><strong>Match Sensitivity</strong> &mdash; Controls how strict the
+        overlap detection is. If stitching produces visible seams or
+        double-content, try lowering to 0.85.</li>
+      </ul>
+
+      <div class="tip">
+        <strong>Note:</strong> GridSnap cannot run on browser-internal pages
+        (chrome://, about:, etc.). Navigate to a regular website first.
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

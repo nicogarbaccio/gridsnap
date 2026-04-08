@@ -1,0 +1,164 @@
+/* GridSnap Overlay Styles — Tech Minimalist Palette */
+
+#gridsnap-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2147483647;
+  cursor: crosshair;
+  background: rgba(0, 0, 0, 0.15);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#gridsnap-selection {
+  position: fixed;
+  border: 2px solid #d3b961;
+  background: rgba(211, 185, 97, 0.06);
+  z-index: 2147483647;
+  pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+}
+
+#gridsnap-selection::after {
+  content: attr(data-dimensions);
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #d3b961;
+  color: #1a1a1a;
+  font: bold 11px/1 'SF Mono', 'Consolas', monospace;
+  padding: 3px 8px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+#gridsnap-hud {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 2147483647;
+  background: rgba(26, 26, 26, 0.95);
+  color: #e0e0e0;
+  font: 13px/1.5 'SF Mono', 'Consolas', monospace;
+  padding: 12px 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(211, 185, 97, 0.3);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  min-width: 200px;
+}
+
+#gridsnap-hud .hud-title {
+  color: #d3b961;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+#gridsnap-hud .hud-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+
+#gridsnap-hud .hud-key {
+  color: #bdc3c7;
+}
+
+#gridsnap-hud .hud-val {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+#gridsnap-hud .hud-divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 6px 0;
+}
+
+#gridsnap-hud .hud-hotkeys {
+  margin-top: 4px;
+  color: #bdc3c7;
+  font-size: 11px;
+  line-height: 1.6;
+  opacity: 0.6;
+}
+
+#gridsnap-hud .hud-hotkeys kbd {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  padding: 1px 5px;
+  font-size: 11px;
+  color: #d3b961;
+}
+
+/* ── Status Indicator ──────────────────────────────────────────────────── */
+#gridsnap-hud .hud-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 2px;
+  margin-bottom: 8px;
+}
+
+#gridsnap-hud .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+#gridsnap-hud .status-ready {
+  color: #1abc9c;
+  background: rgba(26, 188, 156, 0.1);
+}
+#gridsnap-hud .status-ready .status-dot {
+  background: #1abc9c;
+  box-shadow: 0 0 6px rgba(26, 188, 156, 0.6);
+}
+
+#gridsnap-hud .status-capturing {
+  color: #d3b961;
+  background: rgba(211, 185, 97, 0.1);
+}
+#gridsnap-hud .status-capturing .status-dot {
+  background: #d3b961;
+  box-shadow: 0 0 6px rgba(211, 185, 97, 0.6);
+}
+
+#gridsnap-hud .status-processing {
+  color: #bdc3c7;
+  background: rgba(189, 195, 199, 0.08);
+}
+#gridsnap-hud .status-processing .status-dot {
+  background: #bdc3c7;
+  box-shadow: 0 0 6px rgba(189, 195, 199, 0.4);
+  animation: gridsnap-pulse 1s ease-in-out infinite;
+}
+
+@keyframes gridsnap-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+#gridsnap-flash {
+  position: fixed;
+  z-index: 2147483647;
+  background: rgba(211, 185, 97, 0.25);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+}
+
+#gridsnap-flash.active {
+  opacity: 1;
+}
