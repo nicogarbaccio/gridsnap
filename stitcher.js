@@ -77,8 +77,12 @@ async function processStitch({
 
     const final = new OffscreenCanvas(totalWidth, maxHeight);
     const ctx = final.getContext("2d");
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, totalWidth, maxHeight);
+    // Transparent background — no white fill.
+    // For JPEG (no alpha), fill white only behind each column's actual area.
+    if (format === "jpeg") {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, totalWidth, maxHeight);
+    }
 
     let x = 0;
     for (const col of allColumns) {
