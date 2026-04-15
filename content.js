@@ -24,6 +24,7 @@
   // DOM handles
   let overlay = null;
   let selectionBox = null;
+  let prompt = null;
   let hud = null;
   let flash = null;
 
@@ -83,6 +84,11 @@
     selectionBox.style.display = "none";
     document.documentElement.appendChild(selectionBox);
 
+    prompt = document.createElement("div");
+    prompt.id = "gridsnap-prompt";
+    prompt.innerHTML = 'Click and drag to select capture area <span>· Esc to cancel</span>';
+    document.documentElement.appendChild(prompt);
+
     flash = document.createElement("div");
     flash.id = "gridsnap-flash";
     flash.style.display = "none";
@@ -103,10 +109,12 @@
     document.removeEventListener("keydown", onKeyDown);
     overlay?.remove();
     selectionBox?.remove();
+    prompt?.remove();
     hud?.remove();
     flash?.remove();
     overlay = null;
     selectionBox = null;
+    prompt = null;
     hud = null;
     flash = null;
   }
@@ -155,7 +163,9 @@
     focusZone = rect;
     phase = "capturing";
 
-    // Remove the dark overlays — keep just the dashed border on the selection
+    // Remove the prompt and dark overlays — keep just the border on the selection
+    prompt?.remove();
+    prompt = null;
     overlay.style.background = "none";
     overlay.style.pointerEvents = "none";
     selectionBox.style.boxShadow = "none";
@@ -266,30 +276,44 @@
 
   // ── Actions ────────────────────────────────────────────────────────────────
   function doSnap() {
-    updateHUD("capturing");
+    // Hide ALL UI elements completely so nothing appears in the capture.
+    // This includes the selection box-shadow overlay, border, HUD, and flash.
+    const uiElements = [overlay, selectionBox, hud, flash];
+    uiElements.forEach(el => { if (el) el.style.display = "none"; });
 
-    // Flash effect
-    flash.classList.add("active");
-    setTimeout(() => flash.classList.remove("active"), 150);
+    // Wait for two animation frames to guarantee the browser has
+    // fully repainted without our UI, then capture.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        chrome.runtime.sendMessage({ action: "snap" });
 
-    // Make the selection border invisible without hiding any elements —
-    // avoids the visual flash that visibility:hidden causes.
-    if (selectionBox) selectionBox.style.borderColor = "transparent";
-
-    // Brief repaint window, then capture
-    setTimeout(() => {
-      chrome.runtime.sendMessage({ action: "snap" });
-      if (selectionBox) selectionBox.style.borderColor = "";
-      updateHUD("processing");
-    }, 50);
+        // The capture is now queued in the background service worker.
+        // Immediately restore the HUD so the user sees feedback while
+        // the screenshot is being processed. The selection box stays
+        // hidden until snapResult to avoid any risk of it leaking in.
+        if (hud) {
+          hud.style.display = "";
+          hud.innerHTML = `
+            <div class="hud-title">Processing...</div>
+            <div style="color:#888;font-size:12px;">Capturing snap ${snapCount + 1}</div>
+          `;
+        }
+      });
+    });
   }
 
   function onSnapResult(msg) {
+    // Restore all remaining UI elements
+    if (overlay) overlay.style.display = "";
+    if (selectionBox) selectionBox.style.display = "";
+    if (flash) { flash.style.display = "block"; flash.classList.add("active"); }
+    setTimeout(() => { if (flash) flash.classList.remove("active"); }, 150);
+
     if (msg.ok) {
       snapCount = msg.snapCount;
       columnCount = msg.columnCount;
     }
-    updateHUD("ready");
+    updateHUD();
   }
 
   function doColumnBreak() {

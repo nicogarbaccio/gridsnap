@@ -27,7 +27,7 @@ const matchSensitivityInput = document.getElementById("matchSensitivity");
 
 // ── Load saved settings ──────────────────────────────────────────────────────
 chrome.storage.local.get({
-  maxColumnHeight: 2000,
+  maxColumnHeight: 10000,
   columnGap: 20,
   exportFormat: "png",
   matchSensitivity: 0.92,
@@ -87,7 +87,7 @@ btnStart.addEventListener("click", async () => {
 
   // Save all settings before starting
   await chrome.storage.local.set({
-    maxColumnHeight: parseInt(maxHeightInput.value, 10) || 2000,
+    maxColumnHeight: parseInt(maxHeightInput.value, 10) || 10000,
     columnGap: parseInt(columnGapInput.value, 10) || 20,
     exportFormat: exportFormatSelect.value,
     matchSensitivity: parseFloat(matchSensitivityInput.value) || 0.92

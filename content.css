@@ -8,9 +8,38 @@
   height: 100vh;
   z-index: 2147483647;
   cursor: crosshair;
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.35);
   user-select: none;
   -webkit-user-select: none;
+}
+
+#gridsnap-prompt {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  background: rgba(26, 26, 26, 0.92);
+  color: #d3b961;
+  font: 600 14px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  padding: 10px 20px;
+  border-radius: 4px;
+  border: 1px solid rgba(211, 185, 97, 0.3);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  animation: gridsnap-fade-in 0.2s ease-out;
+}
+
+#gridsnap-prompt span {
+  color: #bdc3c7;
+  font-weight: 400;
+}
+
+@keyframes gridsnap-fade-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 #gridsnap-selection {

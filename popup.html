@@ -330,7 +330,7 @@
     <div class="advanced-panel" id="advancedPanel">
       <div class="field">
         <label>Max Column Height (px)</label>
-        <input type="number" id="maxHeight" min="200" max="20000" step="100" value="2000">
+        <input type="number" id="maxHeight" min="200" max="20000" step="100" value="10000">
         <div class="hint">Auto-wrap to a new column beyond this height</div>
       </div>
 
@@ -431,8 +431,8 @@
       <p>Click <strong>Advanced Settings</strong> on the Capture tab to access these options:</p>
       <ul>
         <li><strong>Max Column Height</strong> &mdash; The pixel height limit before
-        auto-wrapping to a new column. Default is 2000px. Increase for longer
-        single-column output; decrease for a wider, shorter grid.</li>
+        auto-wrapping to a new column. Default is 10000px (effectively off).
+        Lower it if you want automatic column wrapping without manual breaks.</li>
         <li><strong>Column Gap</strong> &mdash; Horizontal spacing between columns
         in the output image. Default is 20px.</li>
         <li><strong>Export Format</strong> &mdash; PNG is lossless but large.

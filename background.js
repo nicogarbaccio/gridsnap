@@ -21,7 +21,7 @@ function resetSession() {
     devicePixelRatio: 1,
     snaps: [],             // Array of {dataUrl, columnIndex}
     currentColumn: 0,
-    maxColumnHeight: 2000,
+    maxColumnHeight: 10000,
     columnGap: 20,
     exportFormat: "png",
     matchSensitivity: 0.92,
@@ -32,7 +32,7 @@ function resetSession() {
 // ── Settings ─────────────────────────────────────────────────────────────────
 async function loadSettings() {
   return await chrome.storage.local.get({
-    maxColumnHeight: 2000,
+    maxColumnHeight: 10000,
     columnGap: 20,
     exportFormat: "png",
     matchSensitivity: 0.92
