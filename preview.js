@@ -62,7 +62,7 @@ function render() {
 
     <div class="section-title" style="display:flex;align-items:center;gap:12px;">
       <span>Individual Snaps</span>
-      <button class="btn-secondary" id="btn-download-individual-all" style="font-size:11px;padding:4px 10px;">Download All</button>
+      <button class="btn-secondary" id="btn-download-individual-all" style="font-size:11px;padding:4px 10px;">Download All as ZIP</button>
     </div>
     <div class="snaps-grid" id="snaps-grid"></div>
   `;
@@ -121,11 +121,30 @@ function render() {
     downloadDataUrl(snap.dataUrl, `GridSnap_${ts}_snap${idx + 1}.png`);
   });
 
-  // Download all individual snaps
-  document.getElementById("btn-download-individual-all").addEventListener("click", () => {
-    data.snaps.forEach((snap, i) => {
-      downloadDataUrl(snap.dataUrl, `GridSnap_${ts}_snap${i + 1}.png`);
-    });
+  // Download all individual snaps as a single ZIP
+  document.getElementById("btn-download-individual-all").addEventListener("click", async () => {
+    const btn = document.getElementById("btn-download-individual-all");
+    btn.disabled = true;
+    btn.textContent = "Zipping…";
+
+    try {
+      const zip = new JSZip();
+
+      for (let i = 0; i < data.snaps.length; i++) {
+        const snap = data.snaps[i];
+        // Convert data URL to binary
+        const base64 = snap.dataUrl.split(",")[1];
+        zip.file(`GridSnap_${ts}_snap${i + 1}.png`, base64, { base64: true });
+      }
+
+      const blob = await zip.generateAsync({ type: "blob" });
+      downloadBlob(blob, `GridSnap_${ts}_snaps.zip`);
+    } catch (err) {
+      console.error("ZIP creation failed:", err);
+    }
+
+    btn.disabled = false;
+    btn.textContent = "Download All as ZIP";
   });
 
   // Initial canvas render
@@ -255,4 +274,19 @@ function downloadDataUrl(dataUrl, filename) {
     dataUrl: dataUrl,
     filename: filename
   });
+}
+
+/**
+ * Downloads a Blob directly from the preview page using an anchor element.
+ * Used for ZIP files since blob URLs aren't accessible from the service worker.
+ */
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
