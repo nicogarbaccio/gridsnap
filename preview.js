@@ -232,9 +232,11 @@ async function reassemble(cols, rows) {
     cellH = Math.max(cellH, bmp.height);
   }
 
-  // Canvas dimensions
+  // Canvas dimensions — only allocate rows actually used by snaps
+  const count = Math.min(snaps.length, cols * rows);
+  const actualRows = Math.ceil(count / cols);
   const totalW = cols * cellW + (cols - 1) * gap;
-  const totalH = rows * cellH + (rows - 1) * gap;
+  const totalH = actualRows * cellH + (actualRows - 1) * gap;
 
   const canvas = document.createElement("canvas");
   canvas.width = totalW;
@@ -245,9 +247,6 @@ async function reassemble(cols, rows) {
   ctx.clearRect(0, 0, totalW, totalH);
 
   // Place snaps in grid order (left-to-right, top-to-bottom)
-  const maxSlots = cols * rows;
-  const count = Math.min(snaps.length, maxSlots);
-
   for (let i = 0; i < count; i++) {
     const col = i % cols;
     const row = Math.floor(i / cols);
