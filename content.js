@@ -42,6 +42,16 @@
       case "snapResult":
         onSnapResult(msg);
         break;
+      case "captureComplete":
+        // Screenshot taken — safe to restore HUD while cropping/processing continues
+        if (hud) {
+          hud.style.display = "";
+          hud.innerHTML = `
+            <div class="hud-title">Processing…</div>
+            <div style="color:#888;font-size:12px;">Capturing snap ${snapCount + 1}</div>
+          `;
+        }
+        break;
       case "exportResult":
         onExportResult(msg);
         break;
@@ -371,10 +381,6 @@
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         chrome.runtime.sendMessage({ action: "snap" });
-
-        // Do NOT restore any UI until snapResult comes back.
-        // The background captures asynchronously, and restoring
-        // early would leak UI into subsequent captures.
       });
     });
   }

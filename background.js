@@ -126,6 +126,9 @@ async function handleSnap(tabId) {
       format: "png"
     });
 
+    // Screenshot is done — tell content script it can restore UI
+    chrome.tabs.sendMessage(tabId, { action: "captureComplete" });
+
     // Crop to focus zone using offscreen document
     const croppedDataUrl = await cropImage(dataUrl, session.focusZone, session.devicePixelRatio);
 
