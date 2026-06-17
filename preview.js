@@ -37,7 +37,7 @@ function render() {
       <span class="spacer"></span>
       <div class="download-group" id="download-group">
         <button class="btn-primary" id="btn-download-all">Download Full Canvas</button>
-        <button class="btn-primary download-opts-toggle" id="btn-download-opts" title="Compression options">⚙ Options</button>
+        <button class="btn-primary download-opts-toggle" id="btn-download-opts" title="Compression options">Options</button>
       </div>
     </div>
 
