@@ -35,7 +35,39 @@ function render() {
       <h1>GridSnap Preview</h1>
       <span class="meta">${snapCount} snap${snapCount !== 1 ? "s" : ""} captured</span>
       <span class="spacer"></span>
-      <button class="btn-primary" id="btn-download-all">Download Full Canvas</button>
+      <div class="download-group" id="download-group">
+        <button class="btn-primary" id="btn-download-all">Download Full Canvas</button>
+        <button class="btn-primary download-opts-toggle" id="btn-download-opts" title="Compression options">⚙</button>
+      </div>
+    </div>
+
+    <div class="download-options" id="download-options" style="display:none;">
+      <span class="download-options-label">Export Settings</span>
+      <div class="download-options-row">
+        <label>Format</label>
+        <select id="dl-format">
+          <option value="png">PNG (lossless, larger)</option>
+          <option value="jpeg">JPEG (smaller)</option>
+          <option value="webp">WebP (smallest)</option>
+        </select>
+      </div>
+      <div class="download-options-row" id="quality-row">
+        <label>Quality</label>
+        <input type="range" id="dl-quality" min="10" max="100" step="5" value="80">
+        <span id="dl-quality-val">80%</span>
+      </div>
+      <div class="download-options-row" id="scale-row">
+        <label>Scale</label>
+        <select id="dl-scale">
+          <option value="1">100% (original)</option>
+          <option value="0.75">75%</option>
+          <option value="0.5">50%</option>
+          <option value="0.25">25%</option>
+        </select>
+      </div>
+      <div class="download-options-row">
+        <span class="dl-estimate" id="dl-estimate">Estimating size…</span>
+      </div>
     </div>
 
     <div class="layout-bar" id="layout-bar">
@@ -91,10 +123,110 @@ function render() {
     }
   });
 
-  // Download full canvas (whatever is currently displayed)
-  document.getElementById("btn-download-all").addEventListener("click", () => {
+  // Download options panel toggle
+  const downloadOpts = document.getElementById("download-options");
+  const qualityRow = document.getElementById("quality-row");
+  const dlFormat = document.getElementById("dl-format");
+  const dlQuality = document.getElementById("dl-quality");
+  const dlQualityVal = document.getElementById("dl-quality-val");
+  const dlScale = document.getElementById("dl-scale");
+  const dlEstimate = document.getElementById("dl-estimate");
+
+  document.getElementById("btn-download-opts").addEventListener("click", () => {
+    const visible = downloadOpts.style.display !== "none";
+    downloadOpts.style.display = visible ? "none" : "flex";
+    if (!visible) updateEstimate();
+  });
+
+  dlFormat.addEventListener("change", () => {
+    // Hide quality slider for PNG (lossless)
+    qualityRow.style.display = dlFormat.value === "png" ? "none" : "flex";
+    updateEstimate();
+  });
+
+  dlQuality.addEventListener("input", () => {
+    dlQualityVal.textContent = dlQuality.value + "%";
+    updateEstimate();
+  });
+
+  dlScale.addEventListener("change", () => {
+    updateEstimate();
+  });
+
+  async function updateEstimate() {
+    dlEstimate.textContent = "Estimating…";
+    try {
+      const blob = await getExportBlob();
+      const sizeMB = (blob.size / (1024 * 1024)).toFixed(2);
+      const sizeKB = (blob.size / 1024).toFixed(0);
+      dlEstimate.textContent = blob.size > 1024 * 1024
+        ? `≈ ${sizeMB} MB`
+        : `≈ ${sizeKB} KB`;
+    } catch {
+      dlEstimate.textContent = "Unable to estimate";
+    }
+  }
+
+  /**
+   * Creates an export blob from the current canvas image with the selected
+   * format, quality, and scale settings.
+   */
+  async function getExportBlob() {
     const img = document.getElementById("canvas-img");
-    downloadDataUrl(img.src, `GridSnap_${ts}.png`);
+    const format = dlFormat.value;
+    const quality = parseInt(dlQuality.value, 10) / 100;
+    const scale = parseFloat(dlScale.value);
+
+    // Load the current canvas image into a bitmap
+    const resp = await fetch(img.src);
+    const srcBlob = await resp.blob();
+    const bitmap = await createImageBitmap(srcBlob);
+
+    const w = Math.round(bitmap.width * scale);
+    const h = Math.round(bitmap.height * scale);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+
+    if (format === "jpeg") {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close();
+
+    const mimeType = format === "jpeg" ? "image/jpeg" : format === "webp" ? "image/webp" : "image/png";
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => resolve(blob), mimeType, format === "png" ? undefined : quality);
+    });
+  }
+
+  // Download full canvas with compression settings
+  document.getElementById("btn-download-all").addEventListener("click", async () => {
+    const btn = document.getElementById("btn-download-all");
+    btn.disabled = true;
+    btn.textContent = "Exporting…";
+
+    try {
+      // If options panel is hidden, download as-is (original PNG)
+      if (downloadOpts.style.display === "none") {
+        const img = document.getElementById("canvas-img");
+        downloadDataUrl(img.src, `GridSnap_${ts}.png`);
+      } else {
+        const format = dlFormat.value;
+        const ext = format === "jpeg" ? "jpg" : format;
+        const blob = await getExportBlob();
+        downloadBlob(blob, `GridSnap_${ts}.${ext}`);
+      }
+    } catch (err) {
+      console.error("Export failed:", err);
+    }
+
+    btn.disabled = false;
+    btn.textContent = "Download Full Canvas";
   });
 
   // Render individual snap cards
