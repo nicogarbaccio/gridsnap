@@ -372,17 +372,9 @@
       requestAnimationFrame(() => {
         chrome.runtime.sendMessage({ action: "snap" });
 
-        // The capture is now queued in the background service worker.
-        // Immediately restore the HUD so the user sees feedback while
-        // the screenshot is being processed. The selection box stays
-        // hidden until snapResult to avoid any risk of it leaking in.
-        if (hud) {
-          hud.style.display = "";
-          hud.innerHTML = `
-            <div class="hud-title">Processing...</div>
-            <div style="color:#888;font-size:12px;">Capturing snap ${snapCount + 1}</div>
-          `;
-        }
+        // Do NOT restore any UI until snapResult comes back.
+        // The background captures asynchronously, and restoring
+        // early would leak UI into subsequent captures.
       });
     });
   }

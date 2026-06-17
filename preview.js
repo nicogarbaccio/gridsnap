@@ -320,8 +320,8 @@ function getLayoutCols() {
 
 /**
  * Returns the number of rows for the current layout.
- * For column-based layouts, rows are computed from snap count.
- * For grid layouts (NxN), rows are fixed.
+ * For column-based and NxN layouts, rows expand to fit all snaps.
+ * Only "custom" mode enforces a fixed row count (truncating extras).
  */
 function getLayoutRows() {
   const snapCount = previewData.snaps.length;
@@ -329,9 +329,9 @@ function getLayoutRows() {
     case "1col": return snapCount;
     case "2col": return Math.ceil(snapCount / 2);
     case "3col": return Math.ceil(snapCount / 3);
-    case "2x2": return 2;
-    case "3x3": return 3;
-    case "4x4": return 4;
+    case "2x2": return Math.ceil(snapCount / 2);
+    case "3x3": return Math.ceil(snapCount / 3);
+    case "4x4": return Math.ceil(snapCount / 4);
     case "custom": return customRows;
     default: return snapCount;
   }
