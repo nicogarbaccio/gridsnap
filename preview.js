@@ -35,13 +35,10 @@ function render() {
       <h1>GridSnap Preview</h1>
       <span class="meta">${snapCount} snap${snapCount !== 1 ? "s" : ""} captured</span>
       <span class="spacer"></span>
-      <div class="download-group" id="download-group">
-        <button class="btn-primary" id="btn-download-all">Download Full Canvas</button>
-        <button class="btn-primary download-opts-toggle" id="btn-download-opts" title="Compression options">Options</button>
-      </div>
+      <button class="btn-primary" id="btn-download-all">Download Full Canvas</button>
     </div>
 
-    <div class="download-options" id="download-options" style="display:none;">
+    <div class="download-options" id="download-options">
       <span class="download-options-label">Export Settings</span>
       <div class="download-options-row">
         <label>Format</label>
@@ -112,7 +109,7 @@ function render() {
     }
 
     currentLayout = layout;
-    updateCanvasImage();
+    updateCanvasImage().then(() => updateEstimate());
     // Update active state on buttons
     document.querySelectorAll(".layout-btn").forEach((b) => b.classList.remove("active"));
     if (layout !== "custom") {
@@ -123,7 +120,7 @@ function render() {
     }
   });
 
-  // Download options panel toggle
+  // Download options panel
   const downloadOpts = document.getElementById("download-options");
   const qualityRow = document.getElementById("quality-row");
   const dlFormat = document.getElementById("dl-format");
@@ -131,12 +128,6 @@ function render() {
   const dlQualityVal = document.getElementById("dl-quality-val");
   const dlScale = document.getElementById("dl-scale");
   const dlEstimate = document.getElementById("dl-estimate");
-
-  document.getElementById("btn-download-opts").addEventListener("click", () => {
-    const visible = downloadOpts.style.display !== "none";
-    downloadOpts.style.display = visible ? "none" : "flex";
-    if (!visible) updateEstimate();
-  });
 
   dlFormat.addEventListener("change", () => {
     // Hide quality slider for PNG (lossless)
@@ -211,16 +202,10 @@ function render() {
     btn.textContent = "Exporting…";
 
     try {
-      // If options panel is hidden, download as-is (original PNG)
-      if (downloadOpts.style.display === "none") {
-        const img = document.getElementById("canvas-img");
-        downloadDataUrl(img.src, `GridSnap_${ts}.png`);
-      } else {
-        const format = dlFormat.value;
-        const ext = format === "jpeg" ? "jpg" : format;
-        const blob = await getExportBlob();
-        downloadBlob(blob, `GridSnap_${ts}.${ext}`);
-      }
+      const format = dlFormat.value;
+      const ext = format === "jpeg" ? "jpg" : format;
+      const blob = await getExportBlob();
+      downloadBlob(blob, `GridSnap_${ts}.${ext}`);
     } catch (err) {
       console.error("Export failed:", err);
     }
@@ -280,7 +265,7 @@ function render() {
   });
 
   // Initial canvas render
-  updateCanvasImage();
+  updateCanvasImage().then(() => updateEstimate());
 }
 
 /**
