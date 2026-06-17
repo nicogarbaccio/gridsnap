@@ -100,13 +100,24 @@
     // even if the cursor leaves the overlay or viewport edge
     document.addEventListener("mousemove", onMouseMove, true);
     document.addEventListener("mouseup", onMouseUp, true);
-    document.addEventListener("keydown", onKeyDown);
+    // Use capture phase so we intercept keys even when an iframe/element has focus
+    document.addEventListener("keydown", onKeyDown, true);
+    // Detect when focus leaves the main document (e.g. iframe, devtools)
+    window.addEventListener("blur", onWindowBlur);
+    window.addEventListener("focus", onWindowFocus);
+    // Detect when an interactive element on the page grabs focus during capture
+    document.addEventListener("focusin", onFocusIn, true);
   }
 
   function removeOverlay() {
     document.removeEventListener("mousemove", onMouseMove, true);
     document.removeEventListener("mouseup", onMouseUp, true);
-    document.removeEventListener("keydown", onKeyDown);
+    document.removeEventListener("keydown", onKeyDown, true);
+    document.removeEventListener("focusin", onFocusIn, true);
+    window.removeEventListener("blur", onWindowBlur);
+    window.removeEventListener("focus", onWindowFocus);
+    hideFocusWarning();
+    hideFocusToast();
     overlay?.remove();
     selectionBox?.remove();
     prompt?.remove();
@@ -117,6 +128,80 @@
     prompt = null;
     hud = null;
     flash = null;
+  }
+
+  // ── Focus tracking ─────────────────────────────────────────────────────────
+  let focusWarning = null;
+
+  function onWindowBlur() {
+    if (phase !== "capturing") return;
+    showFocusWarning();
+  }
+
+  function onWindowFocus() {
+    hideFocusWarning();
+  }
+
+  /**
+   * When an interactive element (input, button, iframe, etc.) grabs focus
+   * during a capture session, blur it and show a brief warning so hotkeys
+   * keep working without the user needing to manually refocus.
+   */
+  function onFocusIn(e) {
+    if (phase !== "capturing") return;
+    // Ignore focus on our own UI elements
+    if (e.target.closest("#gridsnap-hud, #gridsnap-focus-warning, #gridsnap-overlay")) return;
+
+    // Blur the element to return keyboard focus to the document
+    if (e.target && typeof e.target.blur === "function") {
+      e.target.blur();
+    }
+
+    // Show a brief toast so the user knows what happened
+    showFocusToast();
+  }
+
+  let focusToast = null;
+  let focusToastTimer = null;
+
+  function showFocusToast() {
+    // If already showing, reset the timer
+    if (focusToast) {
+      clearTimeout(focusToastTimer);
+      focusToastTimer = setTimeout(hideFocusToast, 2000);
+      return;
+    }
+
+    focusToast = document.createElement("div");
+    focusToast.id = "gridsnap-focus-toast";
+    focusToast.textContent = "Focus returned to GridSnap — hotkeys active";
+    document.documentElement.appendChild(focusToast);
+
+    focusToastTimer = setTimeout(hideFocusToast, 2000);
+  }
+
+  function hideFocusToast() {
+    clearTimeout(focusToastTimer);
+    focusToast?.remove();
+    focusToast = null;
+    focusToastTimer = null;
+  }
+
+  function showFocusWarning() {
+    if (focusWarning) return;
+    focusWarning = document.createElement("div");
+    focusWarning.id = "gridsnap-focus-warning";
+    focusWarning.innerHTML = 'Click here to resume GridSnap hotkeys';
+    focusWarning.addEventListener("click", () => {
+      window.focus();
+      hideFocusWarning();
+    });
+    document.documentElement.appendChild(focusWarning);
+  }
+
+  function hideFocusWarning() {
+    focusWarning?.remove();
+    focusWarning = null;
   }
 
   // ── Mouse handlers (selection phase) ───────────────────────────────────────
